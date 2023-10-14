@@ -1,0 +1,8 @@
+"AddonInfo"
+{
+   "name"          "[nuhm] Shields"
+   "version"       "1.0"
+   "up_date"       "13/10/23"
+   "author_name"   "Mikey"
+   "description"   "Stuff."
+}
