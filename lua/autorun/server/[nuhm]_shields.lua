@@ -12,50 +12,6 @@ if debugMode then
     print("[nuhm] Shields has been loaded!")
 end
 
--- Function to set up hooks
-local function SetupHooks()
-
-    -- Hook to call the custom function when a player spawns
-    hook.Add("PlayerSpawn", "StorePlayerArmorOnSpawn", function(ply)
-        -- Added timer to avoid getting armor values before they're set
-        timer.Simple(1, function()
-            if IsValid(ply) then
-                local armorLevel = ply:Armor()
-                playerArmorData[ply] = armorLevel
-            end
-        end)
-    end)
-
-    -- Hook to track player damage
-    hook.Add("PlayerHurt", "TrackLastDamageTime", function(ply)
-        ply:SetNWFloat("LastDamageTime", CurTime())
-    end)
-
-    -- Hook to start regeneration on player spawn
-    hook.Add("PlayerSpawn", "InitializeShieldRegenTimer", function(ply)
-        timer.Create("ShieldRegenTimer_" .. ply:EntIndex(), 1, 0, function()
-            startShieldRegeneration(ply)
-        end)
-    end)
-
-    -- Register the chat command
-    hook.Add("PlayerSay", "RestoreAllArmorCommand", function(ply, text, team)
-        if text:lower() == "/regenall" then
-            if ply:IsSuperAdmin() then
-                RegenAllArmor(ply) -- Call the function to restore armor
-                return ""
-            end
-        end
-    end)
-
-    if debugMode then
-        print("[nuhm] Shields hooks have been added!")
-    end
-end
-
--- Call the function to set up hooks
-SetupHooks()
-
 -- Function to start shield regeneration for a player
 local function startShieldRegeneration(ply)
     -- Check if the player hasn't taken damage for the specified time
@@ -103,3 +59,50 @@ end
 if debugMode then
     print("[nuhm] Shields commands have been loaded!")
 end
+
+-- Function to set up hooks
+local function SetupHooks()
+
+    -- Hook to call the custom function when a player spawns
+    hook.Add("PlayerSpawn", "StorePlayerArmorOnSpawn", function(ply)
+        -- Added timer to avoid getting armor values before they're set
+        timer.Simple(1, function()
+            if IsValid(ply) then
+                local armorLevel = ply:Armor()
+                if armorLevel < 100 then
+                    armorLevel = 100 -- Set it to 100 if it's less than 100
+                end
+                playerArmorData[ply] = armorLevel
+            end
+        end)
+    end)
+
+    -- Hook to track player damage
+    hook.Add("PlayerHurt", "TrackLastDamageTime", function(ply)
+        ply:SetNWFloat("LastDamageTime", CurTime())
+    end)
+
+    -- Hook to start regeneration on player spawn
+    hook.Add("PlayerSpawn", "InitializeShieldRegenTimer", function(ply)
+        timer.Create("ShieldRegenTimer_" .. ply:EntIndex(), 1, 0, function()
+            startShieldRegeneration(ply)
+        end)
+    end)
+
+    -- Register the chat command
+    hook.Add("PlayerSay", "RestoreAllArmorCommand", function(ply, text, team)
+        if text:lower() == "/regenall" then
+            if ply:IsSuperAdmin() then
+                RegenAllArmor(ply) -- Call the function to restore armor
+                return ""
+            end
+        end
+    end)
+
+    if debugMode then
+        print("[nuhm] Shields hooks have been added!")
+    end
+end
+
+-- Call the function to set up hooks
+SetupHooks()
