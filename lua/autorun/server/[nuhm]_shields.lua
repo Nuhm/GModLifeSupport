@@ -1,24 +1,67 @@
 -- Configuration
+local debugMode = false;
 local shieldRegenDelay = 10 -- Time in seconds before regeneration starts
 local regenRate = 1 -- Initial amount of shield regenerated per second
 local maxRegenRate = 10 -- Maximum regeneration rate
 local regenRateIncrement = 1 -- Rate at which the regeneration rate increases
 local regenRateIncreaseInterval = 5 -- Time in seconds between rate increases
 local prevRegenRate = 0;
-local debugMode = false;
+local playerArmorData = {}
 
 if debugMode then
     print("[nuhm] Shields has been loaded!")
 end
 
+-- Function to set up hooks
+local function SetupHooks()
+
+    -- Hook to call the custom function when a player spawns
+    hook.Add("PlayerSpawn", "StorePlayerArmorOnSpawn", function(ply)
+        -- Added timer to avoid getting armor values before they're set
+        timer.Simple(1, function()
+            if IsValid(ply) then
+                local armorLevel = ply:Armor()
+                playerArmorData[ply] = armorLevel
+            end
+        end)
+    end)
+
+    -- Hook to track player damage
+    hook.Add("PlayerHurt", "TrackLastDamageTime", function(ply)
+        ply:SetNWFloat("LastDamageTime", CurTime())
+    end)
+
+    -- Hook to start regeneration on player spawn
+    hook.Add("PlayerSpawn", "InitializeShieldRegenTimer", function(ply)
+        timer.Create("ShieldRegenTimer_" .. ply:EntIndex(), 1, 0, function()
+            startShieldRegeneration(ply)
+        end)
+    end)
+
+    -- Register the chat command
+    hook.Add("PlayerSay", "RestoreAllArmorCommand", function(ply, text, team)
+        if text:lower() == "/regenall" then
+            if ply:IsSuperAdmin() then
+                RegenAllArmor(ply) -- Call the function to restore armor
+                return ""
+            end
+        end
+    end)
+
+    if debugMode then
+        print("[nuhm] Shields hooks have been added!")
+    end
+end
+
+-- Call the function to set up hooks
+SetupHooks()
+
 -- Function to start shield regeneration for a player
 local function startShieldRegeneration(ply)
-    -- Get the player's maximum armor
-    local maxArmor = ply:GetMaxArmor()
-
     -- Check if the player hasn't taken damage for the specified time
     if CurTime() - ply:GetNWFloat("LastDamageTime", 0) >= shieldRegenDelay then
         local currentArmor = ply:Armor()
+        local maxArmor = playerArmorData[ply] or 100 -- Use the stored max armor value or a default (e.g., 100)
 
         -- Calculate the time since the last regeneration increase
         local timeSinceLastIncrease = CurTime() - ply:GetNWFloat("LastRegenIncreaseTime", 0)
@@ -48,33 +91,15 @@ local function startShieldRegeneration(ply)
     end
 end
 
--- Hook to track player damage
-hook.Add("PlayerHurt", "TrackLastDamageTime", function(ply)
-    ply:SetNWFloat("LastDamageTime", CurTime())
-end)
-
--- Hook to start regeneration on player spawn
-hook.Add("PlayerSpawn", "InitializeShieldRegenTimer", function(ply)
-    timer.Create("ShieldRegenTimer_" .. ply:EntIndex(), 1, 0, function()
-        startShieldRegeneration(ply)
-    end)
-end)
-
 -- Create a function to restore all players' armor
 local function RegenAllArmor(ply)
     for _, player in pairs(player.GetAll()) do
-        local maxArmor = player:GetMaxArmor()
+        local maxArmor = playerArmorData[player] or 100 -- Use the stored max armor value or a default (e.g., 100)
         player:SetArmor(maxArmor)
         player:PrintMessage(HUD_PRINTTALK, "Your armor has been fully restored by an administrator.")
     end
 end
 
--- Register the chat command
-hook.Add("PlayerSay", "RestoreAllArmorCommand", function(ply, text, team)
-    if text:lower() == "/regenall" then
-        if ply:IsSuperAdmin() then
-            RegenAllArmor(ply) -- Call the function to restore armor
-            return ""
-        end
-    end
-end)
+if debugMode then
+    print("[nuhm] Shields commands have been loaded!")
+end
