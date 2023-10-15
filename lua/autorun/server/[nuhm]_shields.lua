@@ -5,6 +5,11 @@ local maxRegenRate = 10 -- Maximum regeneration rate
 local regenRateIncrement = 1 -- Rate at which the regeneration rate increases
 local regenRateIncreaseInterval = 5 -- Time in seconds between rate increases
 local prevRegenRate = 0;
+local debugMode = false;
+
+if debugMode then
+    print("[nuhm] Shields has been loaded!")
+end
 
 -- Function to start shield regeneration for a player
 local function startShieldRegeneration(ply)
@@ -30,10 +35,12 @@ local function startShieldRegeneration(ply)
 
         local newArmor = math.min(maxArmor, currentArmor + regenRate)
 
-        -- Log a message in the console when a player is being healed
-        if newArmor > currentArmor then
-            print(ply:Nick() .. " is being healed. Armor increased from " .. currentArmor .. " to " .. newArmor .. " / " .. maxArmor)
-            ply:SetArmor(newArmor)
+        if debugMode then
+            -- Log a message in the console when a player is being healed
+            if newArmor > currentArmor then
+                print(ply:Nick() .. " is being healed. Armor increased from " .. currentArmor .. " to " .. newArmor .. " / " .. maxArmor)
+                ply:SetArmor(newArmor)
+            end
         end
 
         -- Store the current regeneration time for incremental increase
