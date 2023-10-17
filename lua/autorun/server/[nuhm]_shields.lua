@@ -1,9 +1,9 @@
 -- Configuration
 local debugMode = false;
-local shieldRegenDelay = 10 -- Time in seconds before regeneration starts
-local regenRate = 1 -- Initial amount of shield regenerated per second
-local maxRegenRate = 10 -- Maximum regeneration rate
-local regenRateIncrement = 1 -- Rate at which the regeneration rate increases
+local shieldRegenDelay = 10         -- Time in seconds before regeneration starts
+local regenRate = 1                 -- Initial amount of shield regenerated per second
+local maxRegenRate = 10             -- Maximum regeneration rate
+local regenRateIncrement = 1        -- Rate at which the regeneration rate increases
 local regenRateIncreaseInterval = 5 -- Time in seconds between rate increases
 local prevRegenRate = 0;
 local playerArmorData = {}
@@ -34,13 +34,16 @@ local function startShieldRegeneration(ply)
 
         local newArmor = math.min(maxArmor, currentArmor + regenRate)
 
-        if debugMode then
-            -- Log a message in the console when a player is being healed
-            if newArmor > currentArmor then
-                print(ply:Nick() .. " is being healed. Armor increased from " .. currentArmor .. " to " .. newArmor .. " / " .. maxArmor)
-                ply:SetArmor(newArmor)
+
+        -- Log a message in the console when a player is being healed
+        if newArmor > currentArmor then
+            if debugMode then
+                print(ply:Nick() ..
+                    " is being healed. Armor increased from " .. currentArmor .. " to " .. newArmor .. " / " .. maxArmor)
             end
+            ply:SetArmor(newArmor)
         end
+
 
         -- Store the current regeneration time for incremental increase
         ply:SetNWFloat("LastRegenTime", CurTime())
@@ -62,7 +65,6 @@ end
 
 -- Function to set up hooks
 local function SetupHooks()
-
     -- Hook to call the custom function when a player spawns
     hook.Add("PlayerSpawn", "StorePlayerArmorOnSpawn", function(ply)
         -- Added timer to avoid getting armor values before they're set
@@ -94,6 +96,8 @@ local function SetupHooks()
         if text:lower() == "/regenall" then
             if ply:IsSuperAdmin() then
                 RegenAllArmor(ply) -- Call the function to restore armor
+                return ""
+            else
                 return ""
             end
         end
