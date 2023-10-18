@@ -1,11 +1,12 @@
 -- Configuration
 local debugMode = false;
 local shieldRegenDelay = 10         -- Time in seconds before regeneration starts
-local regenRate = 1                 -- Initial amount of shield regenerated per second
+local defaultRegenRate = 1
+local playerRegenRate = {}          -- Initial amount of shield regenerated per second
 local maxRegenRate = 10             -- Maximum regeneration rate
 local regenRateIncrement = 1        -- Rate at which the regeneration rate increases
 local regenRateIncreaseInterval = 5 -- Time in seconds between rate increases
-local prevRegenRate = 0;
+local prevPlayerRegenRate = {};
 local playerArmorData = {}
 
 if debugMode then
@@ -25,14 +26,14 @@ local function startShieldRegeneration(ply)
         -- If it's time to increase the regeneration rate
         if timeSinceLastIncrease >= regenRateIncreaseInterval then
             -- Increase the regeneration rate
-            regenRate = math.min(maxRegenRate, prevRegenRate + regenRateIncrement)
-            prevRegenRate = regenRate
+            playerRegenRate[ply] = math.min(maxRegenRate, prevPlayerRegenRate[ply] + regenRateIncrement)
+            prevPlayerRegenRate[ply] = playerRegenRate[ply]
 
             -- Store the current time for the next increase
             ply:SetNWFloat("LastRegenIncreaseTime", CurTime())
         end
 
-        local newArmor = math.min(maxArmor, currentArmor + regenRate)
+        local newArmor = math.min(maxArmor, currentArmor + playerRegenRate[ply])
 
 
         -- Log a message in the console when a player is being healed
@@ -82,6 +83,7 @@ local function SetupHooks()
     -- Hook to track player damage
     hook.Add("PlayerHurt", "TrackLastDamageTime", function(ply)
         ply:SetNWFloat("LastDamageTime", CurTime())
+        prevPlayerRegenRate[ply] = defaultRegenRate
     end)
 
     -- Hook to start regeneration on player spawn
