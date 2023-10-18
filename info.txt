@@ -1,6 +1,6 @@
 "AddonInfo"
 {
-   "name"          "[nuhm] Shields"
+   "name"          "[nuhm] Life Support"
    "version"       "1.0"
    "up_date"       "13/10/23"
    "author_name"   "Mikey"
