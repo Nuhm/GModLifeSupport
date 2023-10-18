@@ -1,46 +1,54 @@
 -- Configuration
 local debugMode = false;
-local shieldRegenDelay = 10         -- Time in seconds before regeneration starts
+
+-- Delays
+local armorRegenDelay = 10 -- Time in seconds before regeneration starts
+
+-- Regen Rate
 local defaultRegenRate = 1
-local playerRegenRate = {}          -- Initial amount of shield regenerated per second
-local maxRegenRate = 10             -- Maximum regeneration rate
-local regenRateIncrement = 1        -- Rate at which the regeneration rate increases
-local regenRateIncreaseInterval = 5 -- Time in seconds between rate increases
-local prevPlayerRegenRate = {};
+local playerArmorRegenRate = {} -- Initial amount of armor regenerated per second
+local maxArmorRegenRate = 10    -- Maximum regeneration rate
+
+-- Regen Increments
+local regenRateIncrement = 1             -- Rate at which the regeneration rate increases
+local armorRegenRateIncreaseInterval = 5 -- Time in seconds between rate increases
+
+-- Data Stores
 local playerArmorData = {}
+local prevPlayerArmorRegenRate = {};
 
 if debugMode then
     print("[nuhm] Shields has been loaded!")
 end
 
--- Function to start shield regeneration for a player
-local function startShieldRegeneration(ply)
+-- Function to start armor regeneration for a player
+local function startArmorRegeneration(ply)
     -- Check if the player hasn't taken damage for the specified time
-    if CurTime() - ply:GetNWFloat("LastDamageTime", 0) >= shieldRegenDelay then
+    if CurTime() - ply:GetNWFloat("LastDamageTime", 0) >= armorRegenDelay then
         local currentArmor = ply:Armor()
         local maxArmor = playerArmorData[ply] or 100 -- Use the stored max armor value or a default (e.g., 100)
 
         -- Calculate the time since the last regeneration increase
-        local timeSinceLastIncrease = CurTime() - ply:GetNWFloat("LastRegenIncreaseTime", 0)
+        local timeSinceLastArmorRegen = CurTime() - ply:GetNWFloat("LastRegenIncreaseTime", 0)
 
         -- If it's time to increase the regeneration rate
-        if timeSinceLastIncrease >= regenRateIncreaseInterval then
+        if timeSinceLastArmorRegen >= armorRegenRateIncreaseInterval then
             -- Increase the regeneration rate
-            playerRegenRate[ply] = math.min(maxRegenRate, prevPlayerRegenRate[ply] + regenRateIncrement)
-            prevPlayerRegenRate[ply] = playerRegenRate[ply]
+            playerArmorRegenRate[ply] = math.min(maxArmorRegenRate, prevPlayerArmorRegenRate[ply] + regenRateIncrement)
+            prevPlayerRegenRate[ply] = playerArmorRegenRate[ply]
 
             -- Store the current time for the next increase
             ply:SetNWFloat("LastRegenIncreaseTime", CurTime())
         end
 
-        local newArmor = math.min(maxArmor, currentArmor + playerRegenRate[ply])
-
+        local newArmor = math.min(maxArmor, currentArmor + playerArmorRegenRate[ply])
 
         -- Log a message in the console when a player is being healed
         if newArmor > currentArmor then
             if debugMode then
                 print(ply:Nick() ..
-                    " is being healed. Armor increased from " .. currentArmor .. " to " .. newArmor .. " / " .. maxArmor)
+                    " is being regenerated. Armor increased from " ..
+                    currentArmor .. " to " .. newArmor .. " / " .. maxArmor)
             end
             ply:SetArmor(newArmor)
         end
@@ -87,9 +95,9 @@ local function SetupHooks()
     end)
 
     -- Hook to start regeneration on player spawn
-    hook.Add("PlayerSpawn", "InitializeShieldRegenTimer", function(ply)
-        timer.Create("ShieldRegenTimer_" .. ply:EntIndex(), 1, 0, function()
-            startShieldRegeneration(ply)
+    hook.Add("PlayerSpawn", "InitializeArmorRegenTimer", function(ply)
+        timer.Create("ArmorRegenTimer_" .. ply:EntIndex(), 1, 0, function()
+            startArmorRegeneration(ply)
         end)
     end)
 
