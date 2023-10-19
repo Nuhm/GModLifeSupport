@@ -31,7 +31,7 @@ end
 -- Function to start armor regeneration for a player
 local function startArmorRegeneration(ply)
     -- Check if the player hasn't taken damage for the specified time
-    if CurTime() - ply:GetNWFloat("LastDamageTime", 0) >= armorRegenDelay then
+    if CurTime() - ply:GetNWFloat("LastArmorDamageTime", 0) >= armorRegenDelay then
         local currentArmor = ply:Armor()
         local maxArmor = playerArmorData[ply] or 100 -- Use the stored max armor value or a default (e.g., 100)
 
