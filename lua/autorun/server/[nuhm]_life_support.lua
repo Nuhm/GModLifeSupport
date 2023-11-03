@@ -167,7 +167,7 @@ local function SetupHooks()
             ply:SetNWFloat("LastArmorDamageTime", CurTime())
             prevPlayerArmorRegenRate[ply] = defaultArmorRegenRate
         end
-    end)
+    end, 0)
 
     -- Hook to start regeneration on player spawn
     hook.Add("PlayerSpawn", "InitializeRegenTimers", function(ply)
