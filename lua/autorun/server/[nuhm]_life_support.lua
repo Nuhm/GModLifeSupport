@@ -2,6 +2,7 @@
 local debugMode = false;
 
 -- Delays
+local storePlayerArmorOnSpawnDelay = 3
 local armorRegenDelay = 10  -- Time in seconds before armor regeneration starts
 local healthRegenDelay = 15 -- Time in seconds before health regeneration starts
 
@@ -30,6 +31,8 @@ end
 
 -- Function to start armor regeneration for a player
 local function startArmorRegeneration(ply)
+    -- Check if the player entity is valid
+    if not IsValid(ply) then return end
     -- Check if the player hasn't taken damage for the specified time
     if CurTime() - ply:GetNWFloat("LastArmorDamageTime", 0) >= armorRegenDelay then
         local currentArmor = ply:Armor()
@@ -72,6 +75,9 @@ end
 
 -- Function to start health regeneration for a player
 local function startHealthRegeneration(ply)
+    -- Check if the player entity is valid
+    if not IsValid(ply) then return end
+
     -- Check if the player hasn't taken damage to their health for the specified time
     if CurTime() - ply:GetNWFloat("LastHealthDamageTime", 0) >= healthRegenDelay then
         local currentHealth = ply:Health()
@@ -138,7 +144,7 @@ local function SetupHooks()
     -- Hook to call the custom function when a player spawns
     hook.Add("PlayerSpawn", "StorePlayerArmorOnSpawn", function(ply)
         -- Added timer to avoid getting armor values before they're set
-        timer.Simple(1, function()
+        timer.Simple(storePlayerArmorOnSpawnDelay, function()
             if IsValid(ply) then
                 local armorLevel = ply:Armor()
                 if armorLevel < 100 then
