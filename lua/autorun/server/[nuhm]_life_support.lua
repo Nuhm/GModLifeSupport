@@ -32,7 +32,10 @@ end
 -- Function to start armor regeneration for a player
 local function startArmorRegeneration(ply)
     -- Check if the player entity is valid
-    if not IsValid(ply) then return end
+    if not IsValid(ply) then
+        print("[Error] Invalid player entity in startArmorRegeneration function")
+        return
+    end
     -- Check if the player hasn't taken damage for the specified time
     if CurTime() - ply:GetNWFloat("LastArmorDamageTime", 0) >= armorRegenDelay then
         local currentArmor = ply:Armor()
@@ -76,7 +79,10 @@ end
 -- Function to start health regeneration for a player
 local function startHealthRegeneration(ply)
     -- Check if the player entity is valid
-    if not IsValid(ply) then return end
+    if not IsValid(ply) then
+        print("[Error] Invalid player entity in startHealthRegeneration function")
+        return
+    end
 
     -- Check if the player hasn't taken damage to their health for the specified time
     if CurTime() - ply:GetNWFloat("LastHealthDamageTime", 0) >= healthRegenDelay then
@@ -157,6 +163,8 @@ local function SetupHooks()
                     healthLevel = 100 -- Set it to 100 if it's less than 100
                 end
                 playerHealthData[ply] = healthLevel
+            else
+                print("[Error] Invalid player entity in StorePlayerArmorOnSpawn hook")
             end
         end)
     end)
