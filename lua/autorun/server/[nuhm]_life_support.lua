@@ -141,12 +141,36 @@ local function RegenAllHealth()
     end
 end
 
+-- Function to remove player data when they disconnect, time out, or crash
+local function RemovePlayerData(ply)
+    playerArmorData[ply] = nil
+    playerHealthData[ply] = nil
+    prevPlayerArmorRegenRate[ply] = nil
+    prevPlayerHealthRegenRate[ply] = nil
+    playerArmorRegenRate[ply] = nil
+    playerHealthRegenRate[ply] = nil
+
+    -- Stop the regeneration timers upon player disconnect
+    timer.Remove("ArmorRegenTimer_" .. ply:EntIndex())
+    timer.Remove("HealthRegenTimer_" .. ply:EntIndex())
+end
+
 if debugMode then
     print("[nuhm] Life System commands have been loaded!")
 end
 
 -- Function to set up hooks
 local function SetupHooks()
+    -- Hook to call the function when a player disconnects
+    hook.Add("PlayerDisconnected", "RemovePlayerDataOnDisconnect", function(ply)
+        RemovePlayerData(ply)
+    end)
+
+    -- Hook to call the function when a player initial spawns
+    hook.Add("PlayerInitialSpawn", "RemovePlayerDataOnSpawn", function(ply)
+        RemovePlayerData(ply)
+    end)
+
     -- Hook to call the custom function when a player spawns
     hook.Add("PlayerSpawn", "StorePlayerArmorOnSpawn", function(ply)
         -- Added timer to avoid getting armor values before they're set
